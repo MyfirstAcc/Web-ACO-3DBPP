@@ -1,0 +1,391 @@
+let scene, camera, renderer, controls, raycaster, mouse;
+let currentTruckMesh = null;
+let boxMeshes = [];
+let trucksData = [];
+let tooltip = document.getElementById('tooltip');
+let boxesData = [];
+let trucksList = [];
+
+function initThreeJS() {
+    const container = document.getElementById('three-canvas');
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xd3d3d3); // Светло-серый фон
+    camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+    renderer = new THREE.WebGLRenderer();
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    container.appendChild(renderer.domElement);
+
+    camera.position.set(20, 20, 20);
+    camera.lookAt(0, 0, 0);
+
+    // Оси и сетка
+    const axesHelper = new THREE.AxesHelper(10);
+    scene.add(axesHelper);
+    const gridHelper = new THREE.GridHelper(20, 20);
+    scene.add(gridHelper);
+
+    // Освещение
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); // Яркий общий свет
+    scene.add(ambientLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8); // Яркий направленный свет
+    directionalLight.position.set(10, 10, 10);
+    scene.add(directionalLight);
+
+    // Управление камерой
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+
+    // Raycaster для наведения
+    raycaster = new THREE.Raycaster();
+    mouse = new THREE.Vector2();
+
+    animate();
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+    if (typeof TWEEN !== 'undefined') {
+        TWEEN.update(); // Обновление анимаций
+    } else {
+        console.warn('TWEEN.js не загрузился, анимация отключена');
+    }
+    controls.update();
+    renderer.render(scene, camera);
+}
+
+function loadBoxes() {
+    fetch('/api/boxes')
+        .then(response => response.json())
+        .then(boxes => {
+            boxesData = boxes;
+            const tbody = document.querySelector('#box-table tbody');
+            tbody.innerHTML = '';
+            boxes.forEach(box => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="p-2"><input type="number" value="${box.id}" class="w-full p-1 border" data-field="id"></td>
+                    <td class="p-2"><input type="number" step="0.1" value="${box.length}" class="w-full p-1 border" data-field="length"></td>
+                    <td class="p-2"><input type="number" step="0.1" value="${box.width}" class="w-full p-1 border" data-field="width"></td>
+                    <td class="p-2"><input type="number" step="0.1" value="${box.height}" class="w-full p-1 border" data-field="height"></td>
+                    <td class="p-2"><input type="number" step="0.1" value="${box.value}" class="w-full p-1 border" data-field="value"></td>
+                    <td class="p-2"><input type="number" step="0.1" value="${box.weight}" class="w-full p-1 border" data-field="weight"></td>
+                `;
+                tbody.appendChild(row);
+            });
+        })
+        .catch(error => console.error('Ошибка загрузки пакетов:', error));
+}
+
+function addBox() {
+    const tbody = document.querySelector('#box-table tbody');
+    const newId = boxesData.length > 0 ? Math.max(...boxesData.map(box => box.id)) + 1 : 1; // Новый ID
+    const newBox = {
+        id: newId,
+        length: 1.0,
+        width: 1.0,
+        height: 1.0,
+        value: 1.0,
+        weight: 1.0
+    };
+    boxesData.push(newBox); // Добавляем в массив
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td class="p-2"><input type="number" value="${newBox.id}" class="w-full p-1 border" data-field="id"></td>
+        <td class="p-2"><input type="number" step="0.1" value="${newBox.length}" class="w-full p-1 border" data-field="length"></td>
+        <td class="p-2"><input type="number" step="0.1" value="${newBox.width}" class="w-full p-1 border" data-field="width"></td>
+        <td class="p-2"><input type="number" step="0.1" value="${newBox.height}" class="w-full p-1 border" data-field="height"></td>
+        <td class="p-2"><input type="number" step="0.1" value="${newBox.value}" class="w-full p-1 border" data-field="value"></td>
+        <td class="p-2"><input type="number" step="0.1" value="${newBox.weight}" class="w-full p-1 border" data-field="weight"></td>
+    `;
+    tbody.appendChild(row);
+}
+
+function saveBoxes() {
+    const tbody = document.querySelector('#box-table tbody');
+    const rows = tbody.querySelectorAll('tr');
+    const updatedBoxes = Array.from(rows).map(row => {
+        const inputs = row.querySelectorAll('input');
+        return {
+            id: parseInt(inputs[0].value),
+            length: parseFloat(inputs[1].value),
+            width: parseFloat(inputs[2].value),
+            height: parseFloat(inputs[3].value),
+            value: parseFloat(inputs[4].value),
+            weight: parseFloat(inputs[5].value)
+        };
+    });
+
+    fetch('/api/save-boxes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedBoxes)
+    })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message || 'Пакеты успешно сохранены');
+            loadBoxes(); // Перезагружаем таблицу
+        })
+        .catch(error => console.error('Ошибка сохранения пакетов:', error));
+}
+
+function loadTrucks() {
+    fetch('/api/trucks')
+        .then(response => response.json())
+        .then(trucks => {
+            trucksList = trucks;
+            const tbody = document.querySelector('#truck-table tbody');
+            tbody.innerHTML = '';
+            trucks.forEach(truck => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="p-2"><input type="number" value="${truck.id}" class="w-full p-1 border" data-field="id"></td>
+                    <td class="p-2"><input type="number" step="0.1" value="${truck.length}" class="w-full p-1 border" data-field="length"></td>
+                    <td class="p-2"><input type="number" step="0.1" value="${truck.width}" class="w-full p-1 border" data-field="width"></td>
+                    <td class="p-2"><input type="number" step="0.1" value="${truck.height}" class="w-full p-1 border" data-field="height"></td>
+                    <td class="p-2"><input type="number" value="${truck.max_weight}" class="w-full p-1 border" data-field="max_weight"></td>
+                `;
+                tbody.appendChild(row);
+            });
+        })
+        .catch(error => console.error('Ошибка загрузки грузовиков:', error));
+}
+
+function addTruck() {
+    const tbody = document.querySelector('#truck-table tbody');
+    const newId = trucksList.length > 0 ? Math.max(...trucksList.map(truck => truck.id)) + 1 : 1; // Новый ID
+    const newTruck = {
+        id: newId,
+        length: 10.0,
+        width: 2.5,
+        height: 2.5,
+        max_weight: 15000
+    };
+    trucksList.push(newTruck); // Добавляем в массив
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td class="p-2"><input type="number" value="${newTruck.id}" class="w-full p-1 border" data-field="id"></td>
+        <td class="p-2"><input type="number" step="0.1" value="${newTruck.length}" class="w-full p-1 border" data-field="length"></td>
+        <td class="p-2"><input type="number" step="0.1" value="${newTruck.width}" class="w-full p-1 border" data-field="width"></td>
+        <td class="p-2"><input type="number" step="0.1" value="${newTruck.height}" class="w-full p-1 border" data-field="height"></td>
+        <td class="p-2"><input type="number" value="${newTruck.max_weight}" class="w-full p-1 border" data-field="max_weight"></td>
+    `;
+    tbody.appendChild(row);
+}
+
+function saveTrucks() {
+    const tbody = document.querySelector('#truck-table tbody');
+    const rows = tbody.querySelectorAll('tr');
+    const updatedTrucks = Array.from(rows).map(row => {
+        const inputs = row.querySelectorAll('input');
+        return {
+            id: parseInt(inputs[0].value),
+            length: parseFloat(inputs[1].value),
+            width: parseFloat(inputs[2].value),
+            height: parseFloat(inputs[3].value),
+            max_weight: parseInt(inputs[4].value)
+        };
+    });
+
+    fetch('/api/save-trucks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedTrucks)
+    })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message || 'Грузовики успешно сохранены');
+            loadTrucks(); // Перезагружаем таблицу
+        })
+        .catch(error => console.error('Ошибка сохранения грузовиков:', error));
+}
+
+function clearScene() {
+    if (currentTruckMesh) {
+        scene.remove(currentTruckMesh);
+        currentTruckMesh = null;
+    }
+    boxMeshes.forEach(mesh => scene.remove(mesh));
+    boxMeshes = [];
+}
+
+function visualizeTruck(truck) {
+    clearScene();
+
+    // Создаём каркас грузовика, дно на уровне Y=0
+    const truckGeometry = new THREE.BoxGeometry(truck.length, truck.height, truck.width);
+    const truckMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff, wireframe: true });
+    currentTruckMesh = new THREE.Mesh(truckGeometry, truckMaterial);
+    currentTruckMesh.position.set(0, truck.height / 2, 0); // Дно грузовика на Y=0
+    scene.add(currentTruckMesh);
+
+    // Создаём ящики с анимацией
+    boxMeshes = [];
+    truck.placed_boxes.forEach((box, index) => {
+        const geometry = new THREE.BoxGeometry(box.length, box.height, box.width);
+
+        // Тонкое изменение красного цвета
+        const baseColor = new THREE.Color(0xff0000); // Базовый красный
+        const variation = (index % 10) * 0.05; // Небольшое изменение (0–0.45)
+        const redVariation = Math.max(0, 1 - variation); // Уменьшаем красный канал
+        const greenVariation = variation * 0.2; // Слегка добавляем зелёный для оттенка
+        const adjustedColor = new THREE.Color().setRGB(redVariation, greenVariation, 0);
+
+        const material = new THREE.MeshPhongMaterial({
+            color: adjustedColor,
+            opacity: 0.9,
+            transparent: true
+        });
+
+        const mesh = new THREE.Mesh(geometry, material);
+
+        // Добавляем границы ящика
+        const edges = new THREE.EdgesGeometry(geometry);
+        const lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 2 });
+        const wireframe = new THREE.LineSegments(edges, lineMaterial);
+        wireframe.raycast = () => {}; // Отключаем raycasting для границ
+        mesh.add(wireframe);
+
+        const finalPosition = {
+            x: box.position.x + box.length / 2 - truck.length / 2, // Центрируем по X
+            y: box.position.z + box.height / 2, // Пол грузовика на Y=0, учитываем только высоту ящика
+            z: box.position.y + box.width / 2 - truck.width / 2 // Центрируем по Z
+        };
+        mesh.position.set(finalPosition.x, finalPosition.y + 5, finalPosition.z); // Начинаем выше для анимации
+        mesh.userData = box; // Сохраняем данные ящика
+        scene.add(mesh);
+        boxMeshes.push(mesh);
+
+        // Анимация падения, если TWEEN доступен
+        if (typeof TWEEN !== 'undefined') {
+            new TWEEN.Tween(mesh.position)
+                .to({ y: finalPosition.y }, 500)
+                .easing(TWEEN.Easing.Quadratic.Out)
+                .delay(index * 200)
+                .start();
+        } else {
+            mesh.position.y = finalPosition.y; // Без анимации
+        }
+    });
+}
+
+
+function downloadResults(data) {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'packing_results.json';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function runACO() {
+    const params = {
+        num_ants: document.getElementById('num-ants').value,
+        iterations: document.getElementById('iterations').value,
+        strategy: document.getElementById('strategy').value,
+        alpha: document.getElementById('alpha').value,
+        beta: document.getElementById('beta').value,
+        evaporation_rate: document.getElementById('evaporation-rate').value
+    };
+
+    fetch('/api/pack', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params)
+    })
+        .then(response => response.json())
+        .then(data => {
+            trucksData = data.trucks;
+            const truckSelector = document.getElementById('truck-selector');
+            truckSelector.innerHTML = trucksData.map(t => `<option value="${t.truck_id}">Грузовик ${t.truck_id}</option>`).join('');
+            if (trucksData.length > 0) {
+                visualizeTruck(trucksData[0]);
+            }
+
+            let resultText = '';
+            data.trucks.forEach(truck => {
+                resultText += `
+                    <h3 class="text-lg font-semibold">Грузовик ${truck.truck_id}</h3>
+                    <p>Заполнение объёма: ${(truck.fitness * 100).toFixed(2)}%</p>
+                    <p>Общий вес: ${truck.total_weight} кг</p>
+                    <p>Общая стоимость: ${truck.total_value}</p>
+                    <p>Размещено пакетов: ${truck.placed_boxes.length}</p>
+                `;
+            });
+            if (data.unplaced_boxes.length > 0) {
+                resultText += `<p>Неразмещённые пакеты: ${data.unplaced_boxes.map(b => b.id).join(', ')}</p>`;
+            } else {
+                resultText += `<p>Все пакеты размещены!</p>`;
+            }
+            document.getElementById('result-text').innerHTML = resultText;
+
+            // Сохранение результатов
+            document.getElementById('save-results').onclick = () => downloadResults(data);
+        })
+        .catch(error => console.error('Ошибка выполнения ACO:', error));
+}
+
+/// Обработка наведения на ящики
+function onMouseMove(event) {
+    const container = document.getElementById('three-canvas');
+    const rect = container.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(boxMeshes, false); // false для игнорирования дочерних объектов
+
+    // Сбрасываем подсветку для всех ящиков
+    boxMeshes.forEach(mesh => mesh.material.emissive.set(0x000000));
+
+    if (intersects.length > 0) {
+        const mesh = intersects[0].object;
+        const box = mesh.userData;
+        mesh.material.emissive.set(0xffff00); // Жёлтое свечение
+        tooltip.style.display = 'block';
+        tooltip.style.left = `${event.clientX + 10}px`;
+        tooltip.style.top = `${event.clientY + 10}px`;
+        tooltip.innerHTML = `
+            ID: ${box.id}<br>
+            Длина: ${box.length}<br>
+            Ширина: ${box.width}<br>
+            Высота: ${box.height}<br>
+            Вес: ${box.weight} кг<br>
+            Стоимость: ${box.value}
+        `;
+    } else {
+        tooltip.style.display = 'none';
+    }
+}
+
+// Инициализация
+document.addEventListener('DOMContentLoaded', () => {
+    initThreeJS();
+    loadBoxes();
+    loadTrucks();
+    document.getElementById('run-aco').addEventListener('click', runACO);
+    document.getElementById('save-boxes').addEventListener('click', saveBoxes);
+    document.getElementById('add-box').addEventListener('click', addBox);
+    document.getElementById('add-truck').addEventListener('click', addTruck);
+    document.getElementById('save-trucks').addEventListener('click', saveTrucks);
+
+    // Выбор грузовика
+    document.getElementById('truck-selector').addEventListener('change', (e) => {
+        const truckId = parseInt(e.target.value);
+        const truck = trucksData.find(t => t.truck_id === truckId);
+        if (truck) visualizeTruck(truck);
+    });
+
+    // Обработка наведения
+    document.getElementById('three-canvas').addEventListener('mousemove', onMouseMove);
+
+    // Обработка изменения размера окна
+    window.addEventListener('resize', () => {
+        const container = document.getElementById('three-canvas');
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, container.clientHeight);
+    });
+});
