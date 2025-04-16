@@ -63,10 +63,15 @@
             }
         }
 
-
         .truck-selector {
             position: absolute;
-            z-index: 1000;
+            z-index: 1001;
+            pointer-events: auto;
+            padding: 8px;
+            touch-action: manipulation;
+            -webkit-appearance: menulist;
+            /* Гарантирует стандартный вид на iOS */
+            appearance: menulist;
         }
 
         @layer base {
@@ -285,8 +290,8 @@
                     <div id="three-canvas" class="w-full h-96 bg-gray-200 rounded relative">
                         <div id="tooltip"></div>
                         <div class="mt-2 truck-selector">
-                            <label class="block text-sm font-medium ">Выбрать грузовик</label>
-                            <select id="truck-selector" class="w-full border rounded bg-gray-50"></select>
+                            <label class="block text-sm font-medium dark:text-gray-800">Выбрать грузовик</label>
+                            <select id="truck-selector" class="w-full border rounded bg-gray-50 dark:text-gray-800"></select>
                         </div>
                     </div>
 
