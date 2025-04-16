@@ -372,6 +372,7 @@ function onMouseMove(event) {
     event.preventDefault();
     const container = document.getElementById('three-canvas');
     const rect = container.getBoundingClientRect();
+    const tooltip = document.getElementById('tooltip');
 
     let clientX, clientY;
     if (event.type === 'touchstart' || event.type === 'touchmove') {
@@ -382,6 +383,7 @@ function onMouseMove(event) {
         clientY = event.clientY;
     }
 
+    // Нормализованные координаты мыши для raycaster
     mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
     mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
 
@@ -395,13 +397,30 @@ function onMouseMove(event) {
         const box = mesh.userData;
         mesh.material.emissive.set(0xffff00);
 
+        // Позиционирование tooltip
         if (window.innerWidth < 768) {
-            // Мобильная подсказка — снизу по центру
-            tooltip.style.left = '50%';
-            tooltip.style.bottom = '20px';
-            tooltip.style.top = 'auto';
-            tooltip.style.transform = 'translateX(-50%)';
+            // Мобильная версия: tooltip внутри канваса
+            tooltip.style.position = 'absolute';
+            tooltip.style.left = `${clientX - rect.left}px`; // Относительно левого края канваса
+            tooltip.style.top = `${clientY - rect.top - 10}px`; // Смещение вверх для видимости
+            tooltip.style.bottom = 'auto';
+            tooltip.style.transform = 'translateX(-50%)'; // Центрирование по горизонтали
+            tooltip.style.zIndex = '1000';
+
+            // Убедимся, что tooltip не выходит за границы канваса
+            const tooltipRect = tooltip.getBoundingClientRect();
+            if (tooltipRect.right > rect.right) {
+                tooltip.style.left = `${rect.width - tooltipRect.width / 2}px`;
+            }
+            if (tooltipRect.left < rect.left) {
+                tooltip.style.left = `${tooltipRect.width / 2}px`;
+            }
+            if (tooltipRect.top < rect.top) {
+                tooltip.style.top = `${10}px`; // Минимальный отступ сверху
+            }
         } else {
+            // Десктопная версия: стандартное позиционирование
+            tooltip.style.position = 'fixed';
             tooltip.style.left = `${clientX + 10}px`;
             tooltip.style.top = `${clientY + 10}px`;
             tooltip.style.bottom = 'auto';
