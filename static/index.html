@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" x-data>
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Визуализация упаковки грузовиков</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs" defer></script>
     <style>
         #tooltip {
             position: absolute;
@@ -16,57 +17,113 @@
             pointer-events: none;
             display: none;
             font-size: 12px;
+            max-width: 80%;
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            #tooltip {
+                left: 50% !important;
+                top: auto !important;
+                bottom: 20px !important;
+                transform: translateX(-50%);
+            }
         }
     </style>
 </head>
 
 <body class="bg-gray-100">
     <div class="container mx-auto p-4 flex flex-col">
-        <h1 class="text-2xl font-bold mb-4">Приложение для упаковки грузовиков</h1>
-        <div class="flex flex-col md:flex-row gap-4">
-            <div class="flex flex-col  md:w-1/2 gap-4">
-                <!-- Левый блок: Входные данные -->
-                <div class="w-full flex flex-row gap-4">
-                    <!-- Параметры ACO -->
-                    <div class="bg-white md:w-1/3 p-4 rounded shadow">
-                        <h2 class="text-xl font-semibold mb-2">Параметры ACO</h2>
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium">Количество муравьёв</label>
-                            <input id="num-ants" type="number" value="50" class="w-full p-2 border rounded">
-                        </div>
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium">Итерации</label>
-                            <input id="iterations" type="number" value="100" class="w-full p-2 border rounded">
-                        </div>
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium">Альфа</label>
-                            <input id="alpha" type="number" step="0.1" value="3.0" class="w-full p-2 border rounded">
-                        </div>
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium">Бета</label>
-                            <input id="beta" type="number" step="0.1" value="2.0" class="w-full p-2 border rounded">
-                        </div>
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium">Скорость испарения</label>
-                            <input id="evaporation-rate" type="number" step="0.1" value="0.5"
-                                class="w-full p-2 border rounded">
-                        </div>
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium">Стратегия упаковки</label>
-                            <select id="strategy" class="w-full p-2 border rounded">
-                                <option value="value_per_volume">Стоимость на объём</option>
-                                <option value="weight">Вес</option>
-                                <option value="length">Длина</option>
-                            </select>
-                        </div>
-                        <button id="run-aco"
-                            class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Запустить
-                            ACO</button>
-                    </div>
+        <h1 class="text-2xl font-bold mb-4 text-center">Приложение для упаковки грузовиков</h1>
 
-                    <!-- Таблица грузовиков -->
-                    <div class="bg-white p-4 md:w-2/3 rounded shadow flex flex-col">
-                        <h2 class="text-xl font-semibold mb-2">Грузовики</h2>
+        <div class="flex flex-col lg:flex-row gap-4">
+            <!-- Левая колонка -->
+            <div class="flex flex-col lg:w-1/2 gap-4">
+
+                <!-- Параметры ACO -->
+                <div class="bg-white p-4 rounded shadow" x-data="{ open: true }">
+                    <div class="flex justify-between items-center cursor-pointer mb-2" @click="open = !open">
+                        <h2 class="text-xl font-semibold">Параметры ACO</h2>
+                        <button class="text-blue-500 text-sm">
+                            <span x-text="open ? 'Свернуть' : 'Развернуть'"></span>
+                        </button>
+                    </div>
+                    <div x-show="open" class="flex flex-col md:flex-row gap-4">
+
+
+
+                        <!-- Правая часть: форма -->
+                        <div class="md:w-1/2 space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium">Количество муравьёв</label>
+                                <input id="num-ants" type="number" value="50" class="w-full p-2 border rounded">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium">Итерации</label>
+                                <input id="iterations" type="number" value="100" class="w-full p-2 border rounded">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium">Альфа</label>
+                                <input id="alpha" type="number" step="0.1" value="3.0"
+                                    class="w-full p-2 border rounded">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium">Бета</label>
+                                <input id="beta" type="number" step="0.1" value="2.0" class="w-full p-2 border rounded">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium">Скорость испарения</label>
+                                <input id="evaporation-rate" type="number" step="0.1" value="0.5"
+                                    class="w-full p-2 border rounded">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium">Стратегия упаковки</label>
+                                <select id="strategy" class="w-full p-2 border rounded">
+                                    <option value="value_per_volume">Стоимость на объём</option>
+                                    <option value="weight">Вес</option>
+                                    <option value="length">Длина</option>
+                                </select>
+                            </div>
+                            <button id="run-aco"
+                                class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Запустить
+                                ACO</button>
+                        </div>
+                        <!-- Левая часть: описание -->
+                        <div class="md:w-1/2 text-sm text-gray-700">
+                            <p class="mb-2">
+                                Это приложение позволяет оптимизировать упаковку пакетов пиломатериалов в грузовики с
+                                помощью
+                                муравьиного алгоритма (ACO) и метода максимального свободного пространства (Maximal-Space).
+                            </p>
+                            <p class="mb-2">
+                                Вы можете задать параметры алгоритма, выбрать стратегию оценки (по стоимости, весу или
+                                длине), и запустить процесс.
+                                После этого будет отображена визуализация размещения пакетов.
+                            </p>
+                            <p class="mb-2">
+                                Поддерживается измение конфигурации грузовиков и пакетов, а также сохранение результатов
+                                упаковки в JSON.
+                            </p>
+                            <p class="mb-2">
+                                Это тестовая и сырая версия, которая может иметь много багов! Но когда-нибудь их исправят.
+                            </p>
+                            <p class="mb-2">
+                               Для работы необходимо нажать кнопку <i>"Запустить АСО".</i> Также можно изменить конфигурацию пакетов или фур. 
+                               После изменения конфигурации необходимо нажать на кнопку <i>Применить конфигурацию"</i> и запустить алгоритм повторно.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Грузовики -->
+                <div class="bg-white p-4 rounded shadow" x-data="{ open: true }">
+                    <div class="flex justify-between items-center cursor-pointer mb-2" @click="open = !open">
+                        <h2 class="text-xl font-semibold">Грузовики</h2>
+                        <button class="text-blue-500 text-sm">
+                            <span x-text="open ? 'Свернуть' : 'Развернуть'"></span>
+                        </button>
+                    </div>
+                    <div x-show="open" x-transition>
                         <div class="overflow-x-auto overflow-y-auto max-h-64">
                             <table id="truck-table" class="w-full text-sm">
                                 <thead>
@@ -86,15 +143,21 @@
                                 class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Добавить
                                 грузовик</button>
                             <button id="save-trucks"
-                                class="w-full mt-2 bg-green-500 text-white p-2 rounded hover:bg-green-600">Сохранить
-                                грузовики</button>
+                                class="w-full mt-2 bg-green-500 text-white p-2 rounded hover:bg-green-600">Применить
+                                конфигурацию</button>
                         </div>
                     </div>
                 </div>
-                <div>
-                    <!-- Таблица пакетов -->
-                    <div class="bg-white p-4 rounded shadow flex flex-col">
-                        <h2 class="text-xl font-semibold mb-2">Входные пакеты</h2>
+
+                <!-- Пакеты -->
+                <div class="bg-white p-4 rounded shadow" x-data="{ open: true }">
+                    <div class="flex justify-between items-center cursor-pointer mb-2" @click="open = !open">
+                        <h2 class="text-xl font-semibold">Входные пакеты</h2>
+                        <button class="text-blue-500 text-sm">
+                            <span x-text="open ? 'Свернуть' : 'Развернуть'"></span>
+                        </button>
+                    </div>
+                    <div x-show="open" x-transition>
                         <div class="overflow-x-auto overflow-y-auto max-h-64">
                             <table id="box-table" class="w-full text-sm">
                                 <thead>
@@ -115,17 +178,16 @@
                                 class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Добавить
                                 пакет</button>
                             <button id="save-boxes"
-                                class="w-full mt-2 bg-green-500 text-white p-2 rounded hover:bg-green-600">Сохранить
-                                пакеты</button>
+                                class="w-full mt-2 bg-green-500 text-white p-2 rounded hover:bg-green-600">Применить
+                                конфигурация</button>
                         </div>
                     </div>
                 </div>
 
-
             </div>
 
-            <!-- Правый блок: Результаты -->
-            <div class="w-full md:w-2/3 flex flex-col gap-4">
+            <!-- Правая колонка -->
+            <div class="w-full lg:w-1/2 flex flex-col gap-4">
                 <div class="bg-white p-4 rounded shadow">
                     <div id="three-canvas" class="w-full h-96 bg-gray-200 rounded relative"></div>
                     <div class="mt-2">
@@ -143,17 +205,18 @@
             </div>
         </div>
 
-        <footer class="w-full bg-gray-100 py-3 px-4">
+        <footer class="w-full bg-gray-100 py-3 px-4 mt-6">
             <p class="text-center text-gray-500 dark:text-gray-400">
-                Приложение позволяет упаковывать пакеты в грузовик с использованием АСО и метода Maximal-Space
+                LTU Corporation © 2025
             </p>
-        </div>
+        </footer>
     </div>
-    <!-- Подстветка выделенных пакетов-->
+
     <div id="tooltip"></div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/es6-tween/5.5.11/Tween.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es6-tween/5.5.11/Tween.min.js"></script>
     <script src="/static/main.js"></script>
 </body>
 

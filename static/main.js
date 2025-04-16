@@ -2,6 +2,7 @@ let scene, camera, renderer, controls, raycaster, mouse;
 let currentTruckMesh = null;
 let boxMeshes = [];
 let trucksData = [];
+let labelMeshes = []; // Массив для хранения меток
 let tooltip = document.getElementById('tooltip');
 let boxesData = [];
 let trucksList = [];
@@ -207,7 +208,11 @@ function clearScene() {
     }
     boxMeshes.forEach(mesh => scene.remove(mesh));
     boxMeshes = [];
+    // Удаляем все метки
+    labelMeshes.forEach(label => scene.remove(label));
+    labelMeshes = [];
 }
+
 
 function visualizeTruck(truck) {
     clearScene();
@@ -218,6 +223,43 @@ function visualizeTruck(truck) {
     currentTruckMesh = new THREE.Mesh(truckGeometry, truckMaterial);
     currentTruckMesh.position.set(0, truck.height / 2, 0); // Дно грузовика на Y=0
     scene.add(currentTruckMesh);
+
+    // Функция для создания текстовой метки
+    function createLabel(text, position) {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.width = 138;
+        canvas.height = 32;
+        context.font = '20px Arial';
+        context.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.strokeStyle = 'black';
+        context.strokeRect(0, 0, canvas.width, canvas.height);
+        context.fillStyle = 'black';
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.fillText(text, canvas.width / 2, canvas.height / 2);
+
+        const texture = new THREE.CanvasTexture(canvas);
+        const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+        const sprite = new THREE.Sprite(spriteMaterial);
+        sprite.position.copy(position);
+        sprite.scale.set(2, 0.5, 1); // Масштабируем метку
+        return sprite;
+    }
+
+    // Добавляем метки с размерами (исправляем длину и ширину)
+
+    const lengthLabel = createLabel(`${truck.length} м (длина)`, new THREE.Vector3(0, truck.height / 2, truck.width / 2 + 1)); // X - длина
+    const widthLabel = createLabel(`${truck.width} м (ширина)`, new THREE.Vector3(truck.length / 2 + 1, truck.height / 2, 0)); // Z - ширина
+    const heightLabel = createLabel(`${truck.height} м (высота)`, new THREE.Vector3(0, truck.height + 1, 0)); // Y - высота
+    console.log('Truck dimensions:', truck.length, truck.width, truck.height)
+    scene.add(lengthLabel);
+    scene.add(widthLabel);
+    scene.add(heightLabel);
+
+    // Сохраняем метки в массив
+    labelMeshes.push(lengthLabel, widthLabel, heightLabel);
 
     // Создаём ящики с анимацией
     boxMeshes = [];
@@ -243,7 +285,7 @@ function visualizeTruck(truck) {
         const edges = new THREE.EdgesGeometry(geometry);
         const lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 2 });
         const wireframe = new THREE.LineSegments(edges, lineMaterial);
-        wireframe.raycast = () => {}; // Отключаем raycasting для границ
+        wireframe.raycast = () => { }; // Отключаем raycasting для границ
         mesh.add(wireframe);
 
         const finalPosition = {
@@ -268,7 +310,6 @@ function visualizeTruck(truck) {
         }
     });
 }
-
 
 function downloadResults(data) {
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -327,26 +368,47 @@ function runACO() {
         .catch(error => console.error('Ошибка выполнения ACO:', error));
 }
 
-/// Обработка наведения на ящики
 function onMouseMove(event) {
+    event.preventDefault();
     const container = document.getElementById('three-canvas');
     const rect = container.getBoundingClientRect();
-    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+    let clientX, clientY;
+    if (event.type === 'touchstart' || event.type === 'touchmove') {
+        clientX = event.touches[0].clientX;
+        clientY = event.touches[0].clientY;
+    } else {
+        clientX = event.clientX;
+        clientY = event.clientY;
+    }
+
+    mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
 
     raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObjects(boxMeshes, false); // false для игнорирования дочерних объектов
+    const intersects = raycaster.intersectObjects(boxMeshes, false);
 
-    // Сбрасываем подсветку для всех ящиков
     boxMeshes.forEach(mesh => mesh.material.emissive.set(0x000000));
 
     if (intersects.length > 0) {
         const mesh = intersects[0].object;
         const box = mesh.userData;
-        mesh.material.emissive.set(0xffff00); // Жёлтое свечение
+        mesh.material.emissive.set(0xffff00);
+
+        if (window.innerWidth < 768) {
+            // Мобильная подсказка — снизу по центру
+            tooltip.style.left = '50%';
+            tooltip.style.bottom = '20px';
+            tooltip.style.top = 'auto';
+            tooltip.style.transform = 'translateX(-50%)';
+        } else {
+            tooltip.style.left = `${clientX + 10}px`;
+            tooltip.style.top = `${clientY + 10}px`;
+            tooltip.style.bottom = 'auto';
+            tooltip.style.transform = 'none';
+        }
+
         tooltip.style.display = 'block';
-        tooltip.style.left = `${event.clientX + 10}px`;
-        tooltip.style.top = `${event.clientY + 10}px`;
         tooltip.innerHTML = `
             ID: ${box.id}<br>
             Длина: ${box.length}<br>
@@ -378,8 +440,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (truck) visualizeTruck(truck);
     });
 
-    // Обработка наведения
-    document.getElementById('three-canvas').addEventListener('mousemove', onMouseMove);
+    // Обработка наведения (мышь и сенсорные события)
+    const canvas = document.getElementById('three-canvas');
+    canvas.addEventListener('mousemove', onMouseMove);
+    canvas.addEventListener('touchstart', onMouseMove);
+    canvas.addEventListener('touchmove', onMouseMove);
+
+    // Скрываем tooltip при уходе с ящика или завершении касания
+    canvas.addEventListener('touchend', () => {
+        boxMeshes.forEach(mesh => mesh.material.emissive.set(0x000000));
+        tooltip.style.display = 'none';
+    });
 
     // Обработка изменения размера окна
     window.addEventListener('resize', () => {

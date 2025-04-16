@@ -274,9 +274,9 @@
   {
     "id": 35,
     "length": 1,
-    "width": 1,
-    "height": 1,
-    "value": 1,
-    "weight": 1
+    "width": 1.2,
+    "height": 1.2,
+    "value": 20,
+    "weight": 250
   }
 ]

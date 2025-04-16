@@ -1,5 +1,23 @@
 [
-    {"id": 1, "length": 13.7, "width": 2.5, "height": 2.5, "max_weight": 20000},
-    {"id": 2, "length": 13.7, "width": 2.5, "height": 2.5, "max_weight": 20000},
-    {"id": 3, "length": 8.7, "width": 2.5, "height": 2.5, "max_weight": 11000}
+  {
+    "id": 1,
+    "length": 13.7,
+    "width": 2.5,
+    "height": 2.5,
+    "max_weight": 20000
+  },
+  {
+    "id": 2,
+    "length": 6,
+    "width": 2.5,
+    "height": 2.5,
+    "max_weight": 20000
+  },
+  {
+    "id": 3,
+    "length": 8.7,
+    "width": 2.5,
+    "height": 2.5,
+    "max_weight": 11000
+  }
 ]
