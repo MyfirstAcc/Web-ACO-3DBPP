@@ -7,6 +7,15 @@ let tooltip = document.getElementById('tooltip');
 let boxesData = [];
 let trucksList = [];
 
+function showSpinner() {
+    document.getElementById('spinner').classList.remove('hidden');
+}
+
+function hideSpinner() {
+    document.getElementById('spinner').classList.add('hidden');
+}
+
+
 function initThreeJS() {
     const container = document.getElementById('three-canvas');
     scene = new THREE.Scene();
@@ -65,12 +74,12 @@ function loadBoxes() {
             boxes.forEach(box => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td class="p-2"><input type="number" value="${box.id}" class="w-full p-1 border" data-field="id"></td>
-                    <td class="p-2"><input type="number" step="0.1" value="${box.length}" class="w-full p-1 border" data-field="length"></td>
-                    <td class="p-2"><input type="number" step="0.1" value="${box.width}" class="w-full p-1 border" data-field="width"></td>
-                    <td class="p-2"><input type="number" step="0.1" value="${box.height}" class="w-full p-1 border" data-field="height"></td>
-                    <td class="p-2"><input type="number" step="0.1" value="${box.value}" class="w-full p-1 border" data-field="value"></td>
-                    <td class="p-2"><input type="number" step="0.1" value="${box.weight}" class="w-full p-1 border" data-field="weight"></td>
+                    <td class="p-2"><input type="number" value="${box.id}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="id"></td>
+                    <td class="p-2"><input type="number" step="0.1" value="${box.length}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="length"></td>
+                    <td class="p-2"><input type="number" step="0.1" value="${box.width}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="width"></td>
+                    <td class="p-2"><input type="number" step="0.1" value="${box.height}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="height"></td>
+                    <td class="p-2"><input type="number" step="0.1" value="${box.value}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="value"></td>
+                    <td class="p-2"><input type="number" step="0.1" value="${box.weight}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="weight"></td>
                 `;
                 tbody.appendChild(row);
             });
@@ -92,12 +101,12 @@ function addBox() {
     boxesData.push(newBox); // Добавляем в массив
     const row = document.createElement('tr');
     row.innerHTML = `
-        <td class="p-2"><input type="number" value="${newBox.id}" class="w-full p-1 border" data-field="id"></td>
-        <td class="p-2"><input type="number" step="0.1" value="${newBox.length}" class="w-full p-1 border" data-field="length"></td>
-        <td class="p-2"><input type="number" step="0.1" value="${newBox.width}" class="w-full p-1 border" data-field="width"></td>
-        <td class="p-2"><input type="number" step="0.1" value="${newBox.height}" class="w-full p-1 border" data-field="height"></td>
-        <td class="p-2"><input type="number" step="0.1" value="${newBox.value}" class="w-full p-1 border" data-field="value"></td>
-        <td class="p-2"><input type="number" step="0.1" value="${newBox.weight}" class="w-full p-1 border" data-field="weight"></td>
+        <td class="p-2"><input type="number" value="${newBox.id}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="id"></td>
+        <td class="p-2"><input type="number" step="0.1" value="${newBox.length}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="length"></td>
+        <td class="p-2"><input type="number" step="0.1" value="${newBox.width}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="width"></td>
+        <td class="p-2"><input type="number" step="0.1" value="${newBox.height}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="height"></td>
+        <td class="p-2"><input type="number" step="0.1" value="${newBox.value}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="value"></td>
+        <td class="p-2"><input type="number" step="0.1" value="${newBox.weight}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="weight"></td>
     `;
     tbody.appendChild(row);
 }
@@ -140,11 +149,11 @@ function loadTrucks() {
             trucks.forEach(truck => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td class="p-2"><input type="number" value="${truck.id}" class="w-full p-1 border" data-field="id"></td>
-                    <td class="p-2"><input type="number" step="0.1" value="${truck.length}" class="w-full p-1 border" data-field="length"></td>
-                    <td class="p-2"><input type="number" step="0.1" value="${truck.width}" class="w-full p-1 border" data-field="width"></td>
-                    <td class="p-2"><input type="number" step="0.1" value="${truck.height}" class="w-full p-1 border" data-field="height"></td>
-                    <td class="p-2"><input type="number" value="${truck.max_weight}" class="w-full p-1 border" data-field="max_weight"></td>
+                    <td class="p-2"><input type="number" value="${truck.id}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="id"></td>
+                    <td class="p-2"><input type="number" step="0.1" value="${truck.length}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="length"></td>
+                    <td class="p-2"><input type="number" step="0.1" value="${truck.width}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="width"></td>
+                    <td class="p-2"><input type="number" step="0.1" value="${truck.height}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="height"></td>
+                    <td class="p-2"><input type="number" value="${truck.max_weight}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="max_weight"></td>
                 `;
                 tbody.appendChild(row);
             });
@@ -165,11 +174,11 @@ function addTruck() {
     trucksList.push(newTruck); // Добавляем в массив
     const row = document.createElement('tr');
     row.innerHTML = `
-        <td class="p-2"><input type="number" value="${newTruck.id}" class="w-full p-1 border" data-field="id"></td>
-        <td class="p-2"><input type="number" step="0.1" value="${newTruck.length}" class="w-full p-1 border" data-field="length"></td>
-        <td class="p-2"><input type="number" step="0.1" value="${newTruck.width}" class="w-full p-1 border" data-field="width"></td>
-        <td class="p-2"><input type="number" step="0.1" value="${newTruck.height}" class="w-full p-1 border" data-field="height"></td>
-        <td class="p-2"><input type="number" value="${newTruck.max_weight}" class="w-full p-1 border" data-field="max_weight"></td>
+        <td class="p-2"><input type="number" value="${newTruck.id}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="id"></td>
+        <td class="p-2"><input type="number" step="0.1" value="${newTruck.length}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="length"></td>
+        <td class="p-2"><input type="number" step="0.1" value="${newTruck.width}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="width"></td>
+        <td class="p-2"><input type="number" step="0.1" value="${newTruck.height}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="height"></td>
+        <td class="p-2"><input type="number" value="${newTruck.max_weight}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="max_weight"></td>
     `;
     tbody.appendChild(row);
 }
@@ -322,6 +331,9 @@ function downloadResults(data) {
 }
 
 function runACO() {
+    const runButton = document.getElementById('run-aco');
+    runButton.disabled = true; // Отключаем кнопку
+    showSpinner();
     const params = {
         num_ants: document.getElementById('num-ants').value,
         iterations: document.getElementById('iterations').value,
@@ -362,12 +374,17 @@ function runACO() {
             }
             document.getElementById('result-text').innerHTML = resultText;
 
-            // Сохранение результатов
             document.getElementById('save-results').onclick = () => downloadResults(data);
         })
-        .catch(error => console.error('Ошибка выполнения ACO:', error));
+        .catch(error => {
+            console.error('Ошибка выполнения ACO:', error);
+            alert('Произошла ошибка при выполнении ACO');
+        })
+        .finally(() => {
+            hideSpinner();
+            runButton.disabled = false; // Включаем кнопку обратно
+        });
 }
-
 function onMouseMove(event) {
     event.preventDefault();
     const container = document.getElementById('three-canvas');
@@ -451,6 +468,19 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('add-box').addEventListener('click', addBox);
     document.getElementById('add-truck').addEventListener('click', addTruck);
     document.getElementById('save-trucks').addEventListener('click', saveTrucks);
+    const themeToggle = document.getElementById('theme-toggle');
+    themeToggle.addEventListener('click', () => {
+        document.documentElement.classList.toggle('dark');
+        // Сохраняем выбор пользователя
+        localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+    });
+
+    // Загружаем сохранённую тему или системную
+    if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+    } else {
+        document.documentElement.classList.remove('dark');
+    }
 
     // Выбор грузовика
     document.getElementById('truck-selector').addEventListener('change', (e) => {

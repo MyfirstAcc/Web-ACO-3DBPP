@@ -8,6 +8,39 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/alpinejs" defer></script>
     <style>
+        #spinner {
+            display: none;
+            /* Скрыт по умолчанию */
+        }
+
+        #spinner.hidden {
+            display: none;
+        }
+
+        #spinner:not(.hidden) {
+            display: flex;
+        }
+
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        .dark #tooltip {
+            background: rgba(255, 255, 255, 0.9);
+            /* Светлый фон в темной теме */
+            color: black;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
         #tooltip {
             position: absolute;
             background: rgba(0, 0, 0, 0.8);
@@ -29,67 +62,121 @@
                 transform: translateX(-50%);
             }
         }
+
+
+        .truck-selector {
+            position: absolute;
+            z-index: 1000;
+        }
+
+        @layer base {
+            :root {
+                --color-text-base: 255, 255, 255;
+                --color-text-muted: 199, 210, 254;
+                --color-text-inverted: 79, 70, 229;
+                --color-fill: 67, 56, 202;
+                --color-button-accent: 255, 255, 255;
+                --color-button-accent-hover: 238, 242, 255;
+                --color-button-muted: 99, 102, 241;
+            }
+
+            .theme-swiss {
+                --color-text-base: 255, 255, 255;
+                --color-text-muted: 254, 202, 202;
+                --color-text-inverted: 220, 38, 38;
+                --color-fill: 185, 28, 28;
+                --color-button-accent: 255, 255, 255;
+                --color-button-accent-hover: 254, 242, 242;
+                --color-button-muted: 239, 68, 68;
+            }
+
+            .theme-neon {
+                --color-text-base: 17, 24, 2;
+                --color-text-muted: 47, 67, 6;
+                --color-text-inverted: 235, 250, 204;
+                --color-fill: 179, 255, 23;
+                --color-button-accent: 36, 52, 3;
+                --color-button-accent-hover: 55, 79, 5;
+                --color-button-muted: 212, 255, 122;
+            }
+        }
     </style>
 </head>
 
-<body class="bg-gray-100">
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
     <div class="container mx-auto p-4 flex flex-col">
-        <h1 class="text-2xl font-bold mb-4 text-center">Приложение для упаковки грузовиков</h1>
+        <header class="flex flex-row justify-between">
+            <h1 class="text-2xl font-bold mb-4 text-center">Приложение для упаковки грузовиков</h1>
+            <div class="flex justify-center items-center">
+                <button id="theme-toggle" class="h-12 w-12 rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <svg class="fill-violet-700 block dark:hidden" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                    </svg>
+                    <svg class="fill-yellow-500 hidden dark:block" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                            d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                            fill-rule="evenodd" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            </div>
+        </header>
 
         <div class="flex flex-col lg:flex-row gap-4">
             <!-- Левая колонка -->
             <div class="flex flex-col lg:w-1/2 gap-4">
 
                 <!-- Параметры ACO -->
-                <div class="bg-white p-4 rounded shadow" x-data="{ open: true }">
+                <div class="bg-white dark:bg-gray-800 p-4 rounded shadow" x-data="{ open: true }">
                     <div class="flex justify-between items-center cursor-pointer mb-2" @click="open = !open">
                         <h2 class="text-xl font-semibold">Параметры ACO</h2>
-                        <button class="text-blue-500 text-sm">
+                        <button class="text-blue-500 dark:text-blue-400 text-sm">
                             <span x-text="open ? 'Свернуть' : 'Развернуть'"></span>
                         </button>
                     </div>
                     <div x-show="open" class="flex flex-col md:flex-row gap-4">
 
-
-
                         <!-- Правая часть: форма -->
                         <div class="md:w-1/2 space-y-4">
                             <div>
                                 <label class="block text-sm font-medium">Количество муравьёв</label>
-                                <input id="num-ants" type="number" value="50" class="w-full p-2 border rounded">
+                                <input id="num-ants" type="number" value="50"
+                                    class="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium">Итерации</label>
-                                <input id="iterations" type="number" value="100" class="w-full p-2 border rounded">
+                                <input id="iterations" type="number" value="100"
+                                    class="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium">Альфа</label>
                                 <input id="alpha" type="number" step="0.1" value="3.0"
-                                    class="w-full p-2 border rounded">
+                                    class="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium">Бета</label>
-                                <input id="beta" type="number" step="0.1" value="2.0" class="w-full p-2 border rounded">
+                                <input id="beta" type="number" step="0.1" value="2.0"
+                                    class="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium">Скорость испарения</label>
                                 <input id="evaporation-rate" type="number" step="0.1" value="0.5"
-                                    class="w-full p-2 border rounded">
+                                    class="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium">Стратегия упаковки</label>
-                                <select id="strategy" class="w-full p-2 border rounded">
+                                <select id="strategy"
+                                    class="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
                                     <option value="value_per_volume">Стоимость на объём</option>
                                     <option value="weight">Вес</option>
                                     <option value="length">Длина</option>
                                 </select>
                             </div>
                             <button id="run-aco"
-                                class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Запустить
+                                class="w-full bg-blue-500 dark:bg-blue-600 text-white p-2 rounded hover:bg-blue-600 dark:hover:bg-blue-700">Запустить
                                 ACO</button>
                         </div>
                         <!-- Левая часть: описание -->
-                        <div class="md:w-1/2 text-sm text-gray-700">
+                        <div class="md:w-1/2 text-sm text-gray-700 dark:text-gray-300">
                             <p class="mb-2">
                                 Это приложение позволяет оптимизировать упаковку пакетов пиломатериалов в грузовики с
                                 помощью
@@ -121,7 +208,7 @@
                 </div>
 
                 <!-- Грузовики -->
-                <div class="bg-white p-4 rounded shadow" x-data="{ open: true }">
+                <div class="bg-white dark:bg-gray-800 p-4 rounded shadow" x-data="{ open: true }">
                     <div class="flex justify-between items-center cursor-pointer mb-2" @click="open = !open">
                         <h2 class="text-xl font-semibold">Грузовики</h2>
                         <button class="text-blue-500 text-sm">
@@ -132,7 +219,7 @@
                         <div class="overflow-x-auto overflow-y-auto max-h-64">
                             <table id="truck-table" class="w-full text-sm">
                                 <thead>
-                                    <tr class="bg-gray-200">
+                                    <tr class="bg-gray-200 dark:bg-gray-700">
                                         <th class="p-2">ID</th>
                                         <th class="p-2">Длина</th>
                                         <th class="p-2">Ширина</th>
@@ -140,7 +227,7 @@
                                         <th class="p-2">Макс. вес</th>
                                     </tr>
                                 </thead>
-                                <tbody></tbody>
+                                <tbody class="bg-gray-50 dark:bg-gray-800"></tbody>
                             </table>
                         </div>
                         <div class="mt-2">
@@ -155,7 +242,7 @@
                 </div>
 
                 <!-- Пакеты -->
-                <div class="bg-white p-4 rounded shadow" x-data="{ open: true }">
+                <div class="bg-white dark:bg-gray-800 p-4 rounded shadow" x-data="{ open: true }">
                     <div class="flex justify-between items-center cursor-pointer mb-2" @click="open = !open">
                         <h2 class="text-xl font-semibold">Входные пакеты</h2>
                         <button class="text-blue-500 text-sm">
@@ -165,8 +252,9 @@
                     <div x-show="open" x-transition>
                         <div class="overflow-x-auto overflow-y-auto max-h-64">
                             <table id="box-table" class="w-full text-sm">
-                                <thead>
-                                    <tr class="bg-gray-200">
+                                <thead
+                                    class="border-b bg-white font-medium dark:border-neutral-500 dark:bg-neutral-600">
+                                    <tr class="g-gray-200 dark:bg-gray-700">
                                         <th class="p-2">ID</th>
                                         <th class="p-2">Длина</th>
                                         <th class="p-2">Ширина</th>
@@ -175,7 +263,7 @@
                                         <th class="p-2">Вес</th>
                                     </tr>
                                 </thead>
-                                <tbody></tbody>
+                                <tbody class="bg-gray-50 dark:bg-gray-800"></tbody>
                             </table>
                         </div>
                         <div class="mt-2">
@@ -193,30 +281,42 @@
 
             <!-- Правая колонка -->
             <div class="w-full lg:w-1/2 flex flex-col gap-4">
-                <div class="bg-white p-4 rounded shadow">
+                <div class="bg-white dark:bg-gray-800 p-4 rounded shadow">
                     <div id="three-canvas" class="w-full h-96 bg-gray-200 rounded relative">
                         <div id="tooltip"></div>
+                        <div class="mt-2 truck-selector">
+                            <label class="block text-sm font-medium ">Выбрать грузовик</label>
+                            <select id="truck-selector" class="w-full border rounded bg-gray-50"></select>
+                        </div>
                     </div>
-                    <div class="mt-2">
-                        <label class="block text-sm font-medium">Выбрать грузовик</label>
-                        <select id="truck-selector" class="w-full p-2 border rounded"></select>
-                    </div>
+
                 </div>
-                <div class="bg-white p-4 rounded shadow">
+                <div class="bg-white dark:bg-gray-800 p-4 rounded shadow">
                     <h2 class="text-xl font-semibold mb-2">Результаты</h2>
-                    <p id="result-text">Нажмите "Запустить ACO" для просмотра результатов.</p>
+                    <p id="result-text" class="text-gray-700 dark:text-gray-300">Нажмите "Запустить ACO" для просмотра
+                        результатов.</p>
                     <button id="save-results"
-                        class="mt-4 bg-green-500 text-white p-2 rounded hover:bg-green-600">Сохранить
+                        class="mt-4 bg-green-500 dark:bg-green-600 text-white p-2 rounded hover:bg-green-600 dark:hover:bg-green-700">Сохранить
                         результаты</button>
                 </div>
             </div>
         </div>
 
-        <footer class="w-full bg-gray-100 py-3 px-4 mt-6">
-            <p class="text-center text-gray-500 dark:text-gray-400">
-                LTU Corporation © 2025
-            </p>
-        </footer>
+        <div id="spinner"
+            class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 dark:bg-opacity-70 z-[1001]">
+            <div class="flex flex-col items-center">
+                <div
+                    class="w-12 h-12 border-4 border-blue-500 dark:border-blue-400 border-t-transparent rounded-full animate-spin">
+                </div>
+                <p class="text-white mt-2">Загрузка...</p>
+            </div>
+        </div>
+    </div>
+    <footer class="w-full bg-gray-100 dark:bg-gray-900 py-3 px-4 mt-6">
+        <p class="text-center text-gray-500 dark:text-gray-400">
+            LTU Corporation © 2025
+        </p>
+    </footer>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
