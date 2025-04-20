@@ -362,7 +362,7 @@ function visualizeTruck(truck) {
     const lengthLabel = createLabel(`${truck.length} м (длина)`, new THREE.Vector3(0, truck.height / 2, truck.width / 2 + 1)); // X - длина
     const widthLabel = createLabel(`${truck.width} м (ширина)`, new THREE.Vector3(truck.length / 2 + 1, truck.height / 2, 0)); // Z - ширина
     const heightLabel = createLabel(`${truck.height} м (высота)`, new THREE.Vector3(0, truck.height + 1, 0)); // Y - высота
-    console.log('Truck dimensions:', truck.length, truck.width, truck.height)
+    //console.log('Truck dimensions:', truck.length, truck.width, truck.height)
     scene.add(lengthLabel);
     scene.add(widthLabel);
     scene.add(heightLabel);
@@ -471,7 +471,7 @@ function runACO() {
                 visualizeTruck(trucksData[0]);
             }
             testId = data.test_id;
-            console.log(testId);
+            
             let resultText = '';
             data.trucks.forEach(truck => {
                 resultText += `
