@@ -6,6 +6,7 @@ let labelMeshes = []; // Массив для хранения меток
 let tooltip = document.getElementById('tooltip');
 let boxesData = [];
 let trucksList = [];
+let testId = -1;
 
 function showSpinner() {
     document.getElementById('spinner').classList.remove('hidden');
@@ -14,7 +15,6 @@ function showSpinner() {
 function hideSpinner() {
     document.getElementById('spinner').classList.add('hidden');
 }
-
 
 function initThreeJS() {
     const container = document.getElementById('three-canvas');
@@ -80,6 +80,7 @@ function loadBoxes() {
                     <td class="p-2"><input type="number" step="0.1" value="${box.height}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="height"></td>
                     <td class="p-2"><input type="number" step="0.1" value="${box.value}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="value"></td>
                     <td class="p-2"><input type="number" step="0.1" value="${box.weight}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="weight"></td>
+                    <td class="p-2"><button class="delete-box bg-red-500 text-white p-1 rounded hover:bg-red-600" data-id="${box.id}">Удалить</button></td>
                 `;
                 tbody.appendChild(row);
             });
@@ -89,7 +90,7 @@ function loadBoxes() {
 
 function addBox() {
     const tbody = document.querySelector('#box-table tbody');
-    const newId = boxesData.length > 0 ? Math.max(...boxesData.map(box => box.id)) + 1 : 1; // Новый ID
+    const newId = boxesData.length > 0 ? Math.max(...boxesData.map(box => box.id)) + 1 : 1;
     const newBox = {
         id: newId,
         length: 1.0,
@@ -98,7 +99,7 @@ function addBox() {
         value: 1.0,
         weight: 1.0
     };
-    boxesData.push(newBox); // Добавляем в массив
+    boxesData.push(newBox);
     const row = document.createElement('tr');
     row.innerHTML = `
         <td class="p-2"><input type="number" value="${newBox.id}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="id"></td>
@@ -107,8 +108,23 @@ function addBox() {
         <td class="p-2"><input type="number" step="0.1" value="${newBox.height}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="height"></td>
         <td class="p-2"><input type="number" step="0.1" value="${newBox.value}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="value"></td>
         <td class="p-2"><input type="number" step="0.1" value="${newBox.weight}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="weight"></td>
+        <td class="p-2"><button class="delete-box bg-red-500 text-white p-1 rounded hover:bg-red-600" data-id="${newBox.id}">Удалить</button></td>
     `;
     tbody.appendChild(row);
+}
+
+document.addEventListener('click', (event) => {
+    if (event.target.classList.contains('delete-box')) {
+        const id = parseInt(event.target.getAttribute('data-id'));
+        if (confirm('Вы уверены, что хотите удалить этот пакет?')) {
+            deleteBox(id);
+        }
+    }
+});
+
+function deleteBox(id) {
+    boxesData = boxesData.filter(box => box.id !== id);
+    updateBoxTable();
 }
 
 function saveBoxes() {
@@ -139,6 +155,39 @@ function saveBoxes() {
         .catch(error => console.error('Ошибка сохранения пакетов:', error));
 }
 
+function updateBoxTable() {
+    const tbody = document.querySelector('#box-table tbody');
+    tbody.innerHTML = '';
+    boxesData.forEach(box => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td class="p-2"><input type="number" value="${box.id}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="id"></td>
+            <td class="p-2"><input type="number" step="0.1" value="${box.length}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="length"></td>
+            <td class="p-2"><input type="number" step="0.1" value="${box.width}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="width"></td>
+            <td class="p-2"><input type="number" step="0.1" value="${box.height}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="height"></td>
+            <td class="p-2"><input type="number" step="0.1" value="${box.value}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="value"></td>
+            <td class="p-2"><input type="number" step="0.1" value="${box.weight}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="weight"></td>
+            <td class="p-2"><button class="delete-box bg-red-500 text-white p-1 rounded hover:bg-red-600" data-id="${box.id}">Удалить</button></td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+document.addEventListener('input', (event) => {
+    if (event.target.closest('#box-table')) {
+        const row = event.target.closest('tr');
+        const id = parseInt(row.querySelector('input[data-field="id"]').value);
+        const field = event.target.getAttribute('data-field');
+        const value = event.target.value;
+
+        const box = boxesData.find(b => b.id === id);
+        if (box) {
+            if (field === 'id') box[field] = parseInt(value);
+            else box[field] = parseFloat(value);
+        }
+    }
+});
+
 function loadTrucks() {
     fetch('/api/trucks')
         .then(response => response.json())
@@ -154,6 +203,7 @@ function loadTrucks() {
                     <td class="p-2"><input type="number" step="0.1" value="${truck.width}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="width"></td>
                     <td class="p-2"><input type="number" step="0.1" value="${truck.height}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="height"></td>
                     <td class="p-2"><input type="number" value="${truck.max_weight}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="max_weight"></td>
+                     <td class="p-2"><button class="delete-truck bg-red-500 text-white p-1 rounded hover:bg-red-600" data-id="${truck.id}">Удалить</button></td>
                 `;
                 tbody.appendChild(row);
             });
@@ -163,7 +213,7 @@ function loadTrucks() {
 
 function addTruck() {
     const tbody = document.querySelector('#truck-table tbody');
-    const newId = trucksList.length > 0 ? Math.max(...trucksList.map(truck => truck.id)) + 1 : 1; // Новый ID
+    const newId = trucksList.length > 0 ? Math.max(...trucksList.map(truck => truck.id)) + 1 : 1;
     const newTruck = {
         id: newId,
         length: 10.0,
@@ -171,7 +221,7 @@ function addTruck() {
         height: 2.5,
         max_weight: 15000
     };
-    trucksList.push(newTruck); // Добавляем в массив
+    trucksList.push(newTruck);
     const row = document.createElement('tr');
     row.innerHTML = `
         <td class="p-2"><input type="number" value="${newTruck.id}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="id"></td>
@@ -179,9 +229,11 @@ function addTruck() {
         <td class="p-2"><input type="number" step="0.1" value="${newTruck.width}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="width"></td>
         <td class="p-2"><input type="number" step="0.1" value="${newTruck.height}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="height"></td>
         <td class="p-2"><input type="number" value="${newTruck.max_weight}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="max_weight"></td>
+        <td class="p-2"><button class="delete-truck bg-red-500 text-white p-1 rounded hover:bg-red-600" data-id="${newTruck.id}">Удалить</button></td>
     `;
     tbody.appendChild(row);
 }
+
 
 function saveTrucks() {
     const tbody = document.querySelector('#truck-table tbody');
@@ -205,10 +257,59 @@ function saveTrucks() {
         .then(response => response.json())
         .then(data => {
             alert(data.message || 'Грузовики успешно сохранены');
-            loadTrucks(); // Перезагружаем таблицу
+            loadTrucks();
         })
         .catch(error => console.error('Ошибка сохранения грузовиков:', error));
 }
+
+function deleteTruck(id) {
+    trucksList = trucksList.filter(truck => truck.id !== id);
+    updateTruckTable();
+}
+
+function updateTruckTable() {
+    const tbody = document.querySelector('#truck-table tbody');
+    tbody.innerHTML = '';
+    trucksList.forEach(truck => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td class="p-2"><input type="number" value="${truck.id}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="id"></td>
+            <td class="p-2"><input type="number" step="0.1" value="${truck.length}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="length"></td>
+            <td class="p-2"><input type="number" step="0.1" value="${truck.width}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="width"></td>
+            <td class="p-2"><input type="number" step="0.1" value="${truck.height}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="height"></td>
+            <td class="p-2"><input type="number" value="${truck.max_weight}" class="w-full p-1 border bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" data-field="max_weight"></td>
+            <td class="p-2"><button class="delete-truck bg-red-500 text-white p-1 rounded hover:bg-red-600" data-id="${truck.id}">Удалить</button></td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+// Обработчик для редактирования полей
+document.addEventListener('input', (event) => {
+    if (event.target.closest('#truck-table')) {
+        const row = event.target.closest('tr');
+        const id = parseInt(row.querySelector('input[data-field="id"]').value);
+        const field = event.target.getAttribute('data-field');
+        const value = event.target.value;
+
+        const truck = trucksList.find(t => t.id === id);
+        if (truck) {
+            if (field === 'id') truck[field] = parseInt(value);
+            else if (field === 'max_weight') truck[field] = parseInt(value);
+            else truck[field] = parseFloat(value);
+        }
+    }
+});
+
+// Обработчик для кнопок удаления грузовиков
+document.addEventListener('click', (event) => {
+    if (event.target.classList.contains('delete-truck')) {
+        const id = parseInt(event.target.getAttribute('data-id'));
+        if (confirm('Вы уверены, что хотите удалить этот грузовик?')) {
+            deleteTruck(id);
+        }
+    }
+});
 
 function clearScene() {
     if (currentTruckMesh) {
@@ -221,7 +322,6 @@ function clearScene() {
     labelMeshes.forEach(label => scene.remove(label));
     labelMeshes = [];
 }
-
 
 function visualizeTruck(truck) {
     clearScene();
@@ -320,14 +420,25 @@ function visualizeTruck(truck) {
     });
 }
 
-function downloadResults(data) {
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
+async function downloadExcel(testId) {
+    const response = await fetch('/api/save_excel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ test_id: testId })
+    });
+
+    if (!response.ok) {
+        alert("Ошибка при генерации Excel-файла");
+        return;
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'packing_results.json';
+    a.download = `packing_report_${testId}.xlsx`;
     a.click();
-    URL.revokeObjectURL(url);
+    window.URL.revokeObjectURL(url);
 }
 
 function runACO() {
@@ -335,12 +446,14 @@ function runACO() {
     runButton.disabled = true; // Отключаем кнопку
     showSpinner();
     const params = {
-        num_ants: document.getElementById('num-ants').value,
-        iterations: document.getElementById('iterations').value,
+        num_ants: parseInt(document.getElementById('num-ants').value),
+        iterations: parseInt(document.getElementById('iterations').value),
         strategy: document.getElementById('strategy').value,
-        alpha: document.getElementById('alpha').value,
-        beta: document.getElementById('beta').value,
-        evaporation_rate: document.getElementById('evaporation-rate').value
+        alpha: parseFloat(document.getElementById('alpha').value),
+        beta: parseFloat(document.getElementById('beta').value),
+        evaporation_rate: parseFloat(document.getElementById('evaporation-rate').value),
+        boxes: boxesData,
+        trucks: trucksList
     };
 
     fetch('/api/pack', {
@@ -350,13 +463,15 @@ function runACO() {
     })
         .then(response => response.json())
         .then(data => {
+            console.log(data);
             trucksData = data.trucks;
             const truckSelector = document.getElementById('truck-selector');
             truckSelector.innerHTML = trucksData.map(t => `<option value="${t.truck_id}">Грузовик ${t.truck_id}</option>`).join('');
             if (trucksData.length > 0) {
                 visualizeTruck(trucksData[0]);
             }
-
+            testId = data.test_id;
+            console.log(testId);
             let resultText = '';
             data.trucks.forEach(truck => {
                 resultText += `
@@ -374,7 +489,7 @@ function runACO() {
             }
             document.getElementById('result-text').innerHTML = resultText;
 
-            document.getElementById('save-results').onclick = () => downloadResults(data);
+            document.getElementById('save-results').onclick = () => downloadExcel(testId);
         })
         .catch(error => {
             console.error('Ошибка выполнения ACO:', error);
@@ -385,7 +500,6 @@ function runACO() {
             runButton.disabled = false; // Включаем кнопку обратно
         });
 }
-
 
 function onMouseMove(event) {
     //event.preventDefault();
@@ -467,10 +581,9 @@ document.addEventListener('DOMContentLoaded', () => {
     loadBoxes();
     loadTrucks();
     document.getElementById('run-aco').addEventListener('click', runACO);
-    document.getElementById('save-boxes').addEventListener('click', saveBoxes);
     document.getElementById('add-box').addEventListener('click', addBox);
     document.getElementById('add-truck').addEventListener('click', addTruck);
-    document.getElementById('save-trucks').addEventListener('click', saveTrucks);
+
     const themeToggle = document.getElementById('theme-toggle');
     themeToggle.addEventListener('click', () => {
         document.documentElement.classList.toggle('dark');

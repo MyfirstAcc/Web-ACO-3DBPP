@@ -196,7 +196,7 @@
                             </p>
                             <p class="mb-2">
                                 Поддерживается измение конфигурации грузовиков и пакетов, а также сохранение результатов
-                                упаковки в JSON.
+                                упаковки в Excel.
                             </p>
                             <p class="mb-2">
                                 Это <b><i>тестовая и сырая версия</i></b>, которая <b><i>может иметь много
@@ -212,7 +212,6 @@
                     </div>
                 </div>
 
-                <!-- Грузовики -->
                 <div class="bg-white dark:bg-gray-800 p-4 rounded shadow" x-data="{ open: true }">
                     <div class="flex justify-between items-center cursor-pointer mb-2" @click="open = !open">
                         <h2 class="text-xl font-semibold">Грузовики</h2>
@@ -230,18 +229,14 @@
                                         <th class="p-2">Ширина</th>
                                         <th class="p-2">Высота</th>
                                         <th class="p-2">Макс. вес</th>
+                                        <th class="p-2">Действия</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-gray-50 dark:bg-gray-800"></tbody>
                             </table>
                         </div>
                         <div class="mt-2">
-                            <button id="add-truck"
-                                class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Добавить
-                                грузовик</button>
-                            <button id="save-trucks"
-                                class="w-full mt-2 bg-green-500 text-white p-2 rounded hover:bg-green-600">Применить
-                                конфигурацию</button>
+                            <button id="add-truck" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Добавить грузовик</button>
                         </div>
                     </div>
                 </div>
@@ -257,27 +252,22 @@
                     <div x-show="open" x-transition>
                         <div class="overflow-x-auto overflow-y-auto max-h-64">
                             <table id="box-table" class="w-full text-sm">
-                                <thead
-                                    class="border-b bg-white font-medium dark:border-neutral-500 dark:bg-neutral-600">
-                                    <tr class="g-gray-200 dark:bg-gray-700">
+                                <thead class="border-b bg-white font-medium dark:border-neutral-500 dark:bg-neutral-600">
+                                    <tr class="bg-gray-200 dark:bg-gray-700">
                                         <th class="p-2">ID</th>
                                         <th class="p-2">Длина</th>
                                         <th class="p-2">Ширина</th>
                                         <th class="p-2">Высота</th>
                                         <th class="p-2">Стоимость</th>
                                         <th class="p-2">Вес</th>
+                                        <th class="p-2">Действия</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-gray-50 dark:bg-gray-800"></tbody>
                             </table>
                         </div>
                         <div class="mt-2">
-                            <button id="add-box"
-                                class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Добавить
-                                пакет</button>
-                            <button id="save-boxes"
-                                class="w-full mt-2 bg-green-500 text-white p-2 rounded hover:bg-green-600">Применить
-                                конфигурация</button>
+                            <button id="add-box" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Добавить пакет</button>
                         </div>
                     </div>
                 </div>
