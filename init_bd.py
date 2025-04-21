@@ -1,5 +1,7 @@
 import sqlite3
 
+
+# Создание БД для работы приложения
 conn = sqlite3.connect('packing_results.db')
 cur = conn.cursor()
 

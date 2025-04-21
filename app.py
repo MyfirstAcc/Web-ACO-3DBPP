@@ -9,12 +9,12 @@ import sqlite3
 
 app = Flask(__name__)
 
-# Serve static files (HTML, JS)
+# Статические файлы сервера (HTML, JS). Начальный маршрут для приложения
 @app.route('/')
 def serve_index():
     return send_from_directory('static', 'index.html')
 
-# Endpoint to get boxes from JSON
+# Endpoint для получения стртовых данных по пакетам(коробкам)
 @app.route('/api/boxes', methods=['GET'])
 def get_boxes():
     boxes = load_boxes_from_json('boxes.json')
@@ -30,60 +30,7 @@ def get_boxes():
     ]
     return jsonify(boxes_data)
 
-# Endpoint to save edited boxes
-@app.route('/api/save-boxes', methods=['POST'])
-def save_boxes():
-    data = request.get_json()
-    try:
-        with open('boxes.json', 'w') as f:
-            json.dump(data, f, indent=2)
-        return jsonify({'message': 'Ящики успешно сохранены'})
-    except Exception as e:
-        return jsonify({'error': f'Ошибка сохранения ящиков: {str(e)}'}), 500
-
-@app.route('/api/delete-box', methods=['POST'])
-def delete_box():
-    data = request.get_json()
-    box_id = data.get('id')
-    
-    try:
-        # Читаем текущие данные
-        with open('boxes.json', 'r') as f:
-            boxes = json.load(f)
-        
-        # Фильтруем ящики, исключая тот, который нужно удалить
-        updated_boxes = [box for box in boxes if box['id'] != box_id]
-        
-        # Сохраняем обновленные данные
-        with open('boxes.json', 'w') as f:
-            json.dump(updated_boxes, f, indent=2)
-        
-        return jsonify({'message': 'Ящик успешно удален'})
-    except Exception as e:
-        return jsonify({'error': f'Ошибка удаления ящика: {str(e)}'}), 500
-
-@app.route('/api/delete-truck', methods=['POST'])
-def delete_truck():
-    data = request.get_json()
-    truck_id = data.get('id')
-    
-    try:
-        # Читаем текущие данные
-        with open('trucks.json', 'r') as f:
-            trucks = json.load(f)
-        
-        # Фильтруем грузовики, исключая тот, который нужно удалить
-        updated_trucks = [truck for truck in trucks if truck['id'] != truck_id]
-        
-        # Сохраняем обновленные данные
-        with open('trucks.json', 'w') as f:
-            json.dump(updated_trucks, f, indent=2)
-        
-        return jsonify({'message': 'Грузовик успешно удален'})
-    except Exception as e:
-        return jsonify({'error': f'Ошибка удаления грузовика: {str(e)}'}), 500
-
-# Endpoint to get trucks from JSON
+# Endpoint для получения стртовых данных по грузовикам
 @app.route('/api/trucks', methods=['GET'])
 def get_trucks():
     try:
@@ -93,18 +40,7 @@ def get_trucks():
     except Exception as e:
         return jsonify({'error': f'Ошибка загрузки грузовиков: {str(e)}'}), 500
 
-# Endpoint to save edited trucks
-@app.route('/api/save-trucks', methods=['POST'])
-def save_trucks():
-    data = request.get_json()
-    try:
-        with open('trucks.json', 'w') as f:
-            json.dump(data, f, indent=2)
-        return jsonify({'message': 'Грузовики успешно сохранены'})
-    except Exception as e:
-        return jsonify({'error': f'Ошибка сохранения грузовиков: {str(e)}'}), 500
-
-# Endpoint to run ACO packing
+# Endpoint для запуска упаковки
 @app.route('/api/pack', methods=['POST'])
 def pack_trucks():
     data = request.get_json()
@@ -186,10 +122,11 @@ def pack_trucks():
 
     return jsonify({'test_id': test_id, 'trucks': result, 'unplaced_boxes': unplaced})
 
+# Endpoint для сохраннеия результата упаковки в Excel файл (экспериментально)
 @app.route('/api/save_excel', methods=['POST'])
 def save_excel():
     data = request.get_json()
-    print(data)  # Это покажет, что приходит в data
+    # извлекаем номер теста
     test_id = int(data.get('test_id'))
     
     if not test_id:
@@ -249,14 +186,13 @@ def save_excel():
     wb.save(output)
     output.seek(0)
 
+    # Отправляем файл
     return send_file(
         output,
         as_attachment=True,
         download_name=f"packing_report_{test_id}.xlsx",
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-
-
 
 if __name__ == '__main__':
     app.run(host="localhost", debug=True)
