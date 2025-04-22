@@ -14,7 +14,7 @@ app = Flask(__name__)
 def serve_index():
     return send_from_directory('static', 'index.html')
 
-# Endpoint для получения стртовых данных по пакетам(коробкам)
+# Endpoint для получения стартовых данных по пакетам(коробкам)
 @app.route('/api/boxes', methods=['GET'])
 def get_boxes():
     boxes = load_boxes_from_json('boxes.json')
@@ -30,7 +30,7 @@ def get_boxes():
     ]
     return jsonify(boxes_data)
 
-# Endpoint для получения стртовых данных по грузовикам
+# Endpoint для получения стартовых данных по грузовикам
 @app.route('/api/trucks', methods=['GET'])
 def get_trucks():
     try:
@@ -122,7 +122,7 @@ def pack_trucks():
 
     return jsonify({'test_id': test_id, 'trucks': result, 'unplaced_boxes': unplaced})
 
-# Endpoint для сохраннеия результата упаковки в Excel файл (экспериментально)
+# Endpoint для сохранения результата упаковки в Excel файл (экспериментально)
 @app.route('/api/save_excel', methods=['POST'])
 def save_excel():
     data = request.get_json()
@@ -195,4 +195,4 @@ def save_excel():
     )
 
 if __name__ == '__main__':
-    app.run(host="localhost", debug=True)
+    app.run(host="192.168.1.30", debug=True)
