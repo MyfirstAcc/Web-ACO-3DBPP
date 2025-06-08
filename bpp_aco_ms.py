@@ -62,33 +62,47 @@ class Truck:
                                             space.length, space.width, space.height - box.height))
                 break
 
+
 def maximal_space_packing(truck: Truck, boxes: List[Box]) -> Tuple[float, List[Box]]:
+    # Очищаем ранее размещённые коробки и задаём начальное пространство — весь объём фуры
     truck.placed_boxes = []
     truck.spaces = [Space(0, 0, 0, truck.length, truck.width, truck.height)]
-    unplaced_boxes = []
-    sorted_boxes = sorted(boxes, key=lambda b: b.length, reverse=True)
-    total_weight = 0
 
+    unplaced_boxes = []  # Список коробок, которые не удалось разместить с первой попытки
+    # Сортировка коробок по длине по убыванию (длинные вперёд — проще заполнять объём)
+    sorted_boxes = sorted(boxes, key=lambda b: b.length, reverse=True)
+
+    total_weight = 0  # Суммарный вес загруженных коробок
+
+    # Первая попытка размещения коробок
     for box in sorted_boxes:
+        # Проверка ограничения по весу фуры
         if total_weight + box.weight <= truck.max_weight:
             placed = False
+            # Перебор всех доступных свободных пространств в фуре
             for i, space in enumerate(truck.spaces):
+                # Проверка, можно ли разместить коробку в текущем пространстве
                 if truck.can_place(box, space):
                     pos = Position(space.x, space.y, space.z)
+                    # Проверка на пересечение с уже размещёнными коробками
                     if all(not (pos.x < pb_pos.x + pb.length and pos.x + box.length > pb_pos.x and
                                 pos.y < pb_pos.y + pb.width and pos.y + box.width > pb_pos.y and
                                 pos.z < pb_pos.z + pb.height and pos.z + box.height > pb_pos.z)
                            for pb, pb_pos in truck.placed_boxes):
+                        # Размещаем коробку
                         truck.place_box(box, pos)
-                        truck.update_spaces(box, pos)
+                        truck.update_spaces(box, pos)  # Обновляем доступные пространства
                         total_weight += box.weight
                         placed = True
                         break
             if not placed:
+                # Если не удалось разместить — сохраняем на вторую попытку
                 unplaced_boxes.append(box)
 
+    # Вторая попытка размещения оставшихся коробок (например, если они стали влезать в новые пространства)
     remaining_boxes = unplaced_boxes.copy()
     unplaced_boxes = []
+
     while remaining_boxes:
         box = remaining_boxes.pop(0)
         if total_weight + box.weight <= truck.max_weight:
@@ -96,10 +110,12 @@ def maximal_space_packing(truck: Truck, boxes: List[Box]) -> Tuple[float, List[B
             for i, space in enumerate(truck.spaces):
                 if truck.can_place(box, space):
                     pos = Position(space.x, space.y, space.z)
+                    # Проверка пересечения с другими коробками
                     if all(not (pos.x < pb_pos.x + pb.length and pos.x + box.length > pb_pos.x and
                                 pos.y < pb_pos.y + pb.width and pos.y + box.width > pb_pos.y and
                                 pos.z < pb_pos.z + pb.height and pos.z + box.height > pb_pos.z)
                            for pb, pb_pos in truck.placed_boxes):
+                        # Защита от дубликатов: не размещаем коробку с таким же ID, если она уже стоит
                         if not any(pb.id == box.id for pb, _ in truck.placed_boxes):
                             truck.place_box(box, pos)
                             truck.update_spaces(box, pos)
@@ -109,10 +125,16 @@ def maximal_space_packing(truck: Truck, boxes: List[Box]) -> Tuple[float, List[B
             if not placed:
                 unplaced_boxes.append(box)
 
+    # Подсчёт объёма загруженных коробок
     used_volume = sum(b.length * b.width * b.height for b, _ in truck.placed_boxes)
     total_volume = truck.length * truck.width * truck.height
+
+    # Подсчёт эффективности упаковки (доля использованного объёма)
     fitness = used_volume / total_volume if total_volume > 0 else 0
+
+    # Возвращаем эффективность упаковки и список неразмещённых коробок
     return fitness, unplaced_boxes
+
 
 class ACO:
     def __init__(self, boxes: List[Box], truck: Truck, num_ants: int, iterations: int, strategy: str, alpha: float, beta: float, evaporation_rate: float):
@@ -188,13 +210,17 @@ class ACO:
 def pack_multiple_trucks(trucks: List[Truck], boxes: List[Box], num_ants: int, iterations: int, strategy: str, alpha: float, beta: float, evaporation_rate: float) -> Tuple[List[Truck], List[Box]]:
     remaining_boxes = boxes.copy()
     used_trucks = []
-
+    # Для каждого грузовика
     for truck in trucks:
         if not remaining_boxes:
             break
-
-        aco = ACO(boxes=remaining_boxes, truck=truck, num_ants=num_ants, iterations=iterations, strategy=strategy, alpha=alpha, beta=beta, evaporation_rate=evaporation_rate)
+        
+        # Запуск ACO с методом Maximal-Space для размещения
+        aco = ACO(boxes=remaining_boxes, truck=truck, num_ants=num_ants, 
+                  iterations=iterations, strategy=strategy, 
+                  alpha=alpha, beta=beta, evaporation_rate=evaporation_rate)
         aco_solution = aco.run()
+        # Проверка заполненности
         fitness, unplaced_boxes = maximal_space_packing(truck, aco_solution)
 
         placed_box_ids = {box.id for box, _ in truck.placed_boxes}

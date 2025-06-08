@@ -69,7 +69,7 @@ def pack_trucks():
     used_trucks, unplaced_boxes = pack_multiple_trucks(
         trucks, boxes, num_ants, iterations, strategy, alpha, beta, evaporation_rate
     )
-
+    # Формирование результата 
     result = []
     for truck in used_trucks:
         placed_boxes = [
@@ -195,4 +195,4 @@ def save_excel():
     )
 
 if __name__ == '__main__':
-    app.run(host="192.168.1.30", debug=True)
+    app.run(host="localhost", debug=True)

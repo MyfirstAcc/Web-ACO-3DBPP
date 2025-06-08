@@ -15,8 +15,8 @@ function showSpinner() {
 function hideSpinner() {
     document.getElementById('spinner').classList.add('hidden');
 }
-
-function initThreeJS() {
+// Инициализация 3d сцены 
+function initThreeJS() {   
     const container = document.getElementById('three-canvas');
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0xd3d3d3); // Светло-серый фон
@@ -25,6 +25,7 @@ function initThreeJS() {
     renderer.setSize(container.clientWidth, container.clientHeight);
     container.appendChild(renderer.domElement);
 
+    // Установка камеры 
     camera.position.set(20, 20, 20);
     camera.lookAt(0, 0, 0);
 
@@ -50,6 +51,7 @@ function initThreeJS() {
     raycaster = new THREE.Raycaster();
     mouse = new THREE.Vector2();
 
+    // Анимация для расстановки груза
     animate();
 }
 
@@ -357,7 +359,7 @@ function visualizeTruck(truck) {
         return sprite;
     }
 
-    // Добавляем метки с размерами (исправляем длину и ширину)
+    // Добавляем метки с размерами )
 
     const lengthLabel = createLabel(`${truck.length} м (длина)`, new THREE.Vector3(0, truck.height / 2, truck.width / 2 + 1)); // X - длина
     const widthLabel = createLabel(`${truck.width} м (ширина)`, new THREE.Vector3(truck.length / 2 + 1, truck.height / 2, 0)); // Z - ширина
@@ -375,13 +377,14 @@ function visualizeTruck(truck) {
     truck.placed_boxes.forEach((box, index) => {
         const geometry = new THREE.BoxGeometry(box.length, box.height, box.width);
 
-        // Тонкое изменение красного цвета
+        // Цветовая палитра для пакетов
         const baseColor = new THREE.Color(0xff0000); // Базовый красный
         const variation = (index % 10) * 0.05; // Небольшое изменение (0–0.45)
         const redVariation = Math.max(0, 1 - variation); // Уменьшаем красный канал
         const greenVariation = variation * 0.2; // Слегка добавляем зелёный для оттенка
         const adjustedColor = new THREE.Color().setRGB(redVariation, greenVariation, 0);
 
+        // полигон для пакета, выбор материала
         const material = new THREE.MeshPhongMaterial({
             color: adjustedColor,
             opacity: 0.9,
