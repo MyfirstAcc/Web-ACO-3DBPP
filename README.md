@@ -8,10 +8,29 @@
 -	Сохранение результатов в базе данных SQLite и экспорт в Excel для отчетности.
 -	Интерактивная 3D-визуализация размещения коробок с анимацией и всплывающими подсказками.
 
+### Использованные технологии
+Backend - Flask API.
+Frontend - JS, JSTree, JSTween, Taiwind
+
 
 
 ### Пример работы
+Обший вид приложения для детскоп и мобильной версии:
+
 <img src="https://github.com/user-attachments/assets/7766d24b-ed04-4c84-bfb6-f07919809053"  widht="300" height="300" /> <img src="https://github.com/user-attachments/assets/a0ef94ab-928f-4618-9591-f4aaa1dd41f7" widht="300" height="300" />
+
+Возможно менять параметры размера грузовиков и грузов(пакетов) помещаемые в грузовики:
+<img src="https://github.com/user-attachments/assets/ba8d4f30-3d66-40a4-8e76-b95a2802f8d6"  widht="400" height="400" />
+
+### Endpoints
+
+- _/_(GET) - Запрос на получение клиентской страницы;
+-	_/api/boxes_ (GET). Получение данных о коробках из boxes.json;
+-	_/api/trucks_(GET). Получение данных о грузовиках из trucks.json;
+-	_/api/pack_ (POST). Выполнение упаковки с заданными параметрами;
+-	_/api/save_excel_ (POST). Генерация Excel-отчета.
+
+
 
 ### Запуск
 Для Python 3.11+.
