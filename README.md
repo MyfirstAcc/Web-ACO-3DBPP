@@ -8,6 +8,11 @@
 -	Сохранение результатов в базе данных SQLite и экспорт в Excel для отчетности.
 -	Интерактивная 3D-визуализация размещения коробок с анимацией и всплывающими подсказками.
 
+Предложенный алгоритм показана на диаграмме активнотсти UML:
+
+<img src="https://github.com/user-attachments/assets/50d320cd-edf6-4fe3-a9de-b8db32f02f9e"  widht="300" height="500" /> 
+
+
 ### Использованные технологии
 Backend - Flask API.
 Frontend - JS, JSTree, JSTween, Taiwind
